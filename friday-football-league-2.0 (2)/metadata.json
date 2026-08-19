@@ -1,6 +1,0 @@
-{
-  "name": "Friday Football League 2.0",
-  "description": "Official individual points league management platform with live standings, 15-week match schedule, player rosters, and Best-13 results scoring system.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
