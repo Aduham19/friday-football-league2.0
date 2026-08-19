@@ -1,0 +1,22 @@
+[build]
+  command = "vite build"
+  publish = "dist"
+
+# `netlify dev` otherwise auto-detects the production build script; run Vite instead
+# and let the functions below serve /api locally.
+[dev]
+  command = "npx vite --port 5173"
+  targetPort = 5173
+  framework = "#custom"
+  autoLaunch = false
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Single page app fallback. API routes are claimed by the functions above, so
+# this only catches real client-side routes.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
