@@ -1,0 +1,228 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+.glass-panel {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ==========================================================================
+   DEDICATED PRINTER-FRIENDLY STYLESHEET OVERRIDE FOR CLEAN A4 PRINTOUT
+   ========================================================================== */
+
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  /* Force light mode and high contrast print colors */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 100% !important;
+  }
+
+  /* Hide all interactive UI elements, navigation, buttons, inputs, modals, toasts EXCEPT active match print modal */
+  .no-print,
+  header,
+  nav,
+  footer,
+  button,
+  input,
+  select,
+  textarea,
+  .toast-container {
+    display: none !important;
+  }
+
+  /* When printing directly or from match modal */
+  .fixed:not(.match-detail-modal-wrapper),
+  .sticky {
+    display: none !important;
+  }
+
+  .match-detail-modal-wrapper {
+    display: block !important;
+    position: static !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    backdrop-filter: none !important;
+  }
+
+  .match-detail-modal-box {
+    display: block !important;
+    position: static !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-only-flex {
+    display: flex !important;
+  }
+
+  .print-only-grid {
+    display: grid !important;
+  }
+
+  /* Reset main container padding and widths for full page A4 utilization */
+  main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Standings Card / Glass panel reset for pure white paper output */
+  .glass-panel,
+  .print-clean-container {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Standings table reformatting for A4 print */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+    margin: 0 !important;
+    font-size: 8.5pt !important;
+    color: #0f172a !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  thead tr {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+  }
+
+  thead th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border: 1px solid #334155 !important;
+    padding: 4.5pt 3pt !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  tbody tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f8fafc !important;
+  }
+
+  tbody td {
+    padding: 3.5pt 3pt !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    font-size: 8.5pt !important;
+  }
+
+  /* Clean rank badges in print */
+  .print-rank-1 {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1px solid #f59e0b !important;
+    font-weight: 900 !important;
+  }
+
+  .print-rank-2 {
+    background-color: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #94a3b8 !important;
+    font-weight: 900 !important;
+  }
+
+  .print-rank-3 {
+    background-color: #ffedd5 !important;
+    color: #9a3412 !important;
+    border: 1px solid #ea580c !important;
+    font-weight: 900 !important;
+  }
+
+  /* Ensure text colors are sharp and readable */
+  .text-amber-400, .text-amber-500, .text-amber-600 {
+    color: #92400e !important;
+    font-weight: 800 !important;
+  }
+
+  .text-emerald-400, .text-emerald-500 {
+    color: #166534 !important;
+  }
+
+  .text-red-400, .text-red-500 {
+    color: #991b1b !important;
+  }
+
+  .text-slate-400, .text-slate-500, .text-slate-300 {
+    color: #334155 !important;
+  }
+
+  .text-white {
+    color: #0f172a !important;
+  }
+}
+
