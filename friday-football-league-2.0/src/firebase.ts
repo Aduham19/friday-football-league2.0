@@ -1,17 +1,36 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, Firestore, Unsubscribe } from 'firebase/firestore';
 import { LeagueData, AuthConfig } from './types';
-import firebaseConfig from '../firebase-applet-config.json';
+import rawFirebaseConfig from '../firebase-applet-config.json';
 
-// Initialize Firebase App
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+/**
+ * The Firebase config file is injected by the hosting platform and can legitimately
+ * be empty (for example on a public deploy where no Firebase project is attached).
+ * Initialising Firestore without a projectId throws, so every access is guarded and
+ * the app silently falls back to the Netlify API + local storage instead of crashing.
+ */
+const firebaseConfig = (rawFirebaseConfig || {}) as Record<string, string>;
 
-// Use the designated Firestore Database ID
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || undefined);
+export const isFirebaseConfigured: boolean = Boolean(
+  firebaseConfig && firebaseConfig.projectId && firebaseConfig.apiKey
+);
 
-// Document paths
-const LEAGUE_DOC_PATH = 'league/main_season_2026';
-const AUTH_CONFIG_DOC_PATH = 'settings/auth_config';
+let cachedDb: Firestore | null = null;
+let firebaseInitFailed = false;
+
+function getDb(): Firestore | null {
+  if (!isFirebaseConfigured || firebaseInitFailed) return null;
+  if (cachedDb) return cachedDb;
+  try {
+    const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    cachedDb = getFirestore(app, firebaseConfig.firestoreDatabaseId || undefined);
+    return cachedDb;
+  } catch (e) {
+    firebaseInitFailed = true;
+    console.warn('Firebase is not available, continuing without cloud sync:', e);
+    return null;
+  }
+}
 
 /**
  * Subscribe to real-time live updates from Firebase Cloud Firestore
@@ -20,8 +39,11 @@ export function subscribeToFirebaseLeague(
   onData: (data: LeagueData) => void,
   onError?: (err: any) => void
 ): Unsubscribe {
+  const database = getDb();
+  if (!database) return () => {};
+
   try {
-    const docRef = doc(db, 'league', 'main_season_2026');
+    const docRef = doc(database, 'league', 'main_season_2026');
     return onSnapshot(
       docRef,
       (docSnap) => {
@@ -47,8 +69,11 @@ export function subscribeToFirebaseLeague(
  * Fetch current league data from Firebase Cloud Firestore once
  */
 export async function getFirebaseLeagueData(): Promise<LeagueData | null> {
+  const database = getDb();
+  if (!database) return null;
+
   try {
-    const docRef = doc(db, 'league', 'main_season_2026');
+    const docRef = doc(database, 'league', 'main_season_2026');
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data() as LeagueData;
@@ -66,6 +91,9 @@ export async function getFirebaseLeagueData(): Promise<LeagueData | null> {
  * Save & sync league data directly to Firebase Cloud Firestore for real-time broadcast to all devices
  */
 export async function saveFirebaseLeagueData(data: LeagueData): Promise<boolean> {
+  const database = getDb();
+  if (!database) return false;
+
   try {
     if (!data || !Array.isArray(data.players)) {
       return false;
@@ -78,7 +106,7 @@ export async function saveFirebaseLeagueData(data: LeagueData): Promise<boolean>
       deletedPlayerNames: data.deletedPlayerNames || [],
       lastUpdated: data.lastUpdated || Date.now()
     };
-    const docRef = doc(db, 'league', 'main_season_2026');
+    const docRef = doc(database, 'league', 'main_season_2026');
     await setDoc(docRef, cleanData, { merge: true });
     return true;
   } catch (e) {
@@ -91,8 +119,11 @@ export async function saveFirebaseLeagueData(data: LeagueData): Promise<boolean>
  * Fetch authentication and security credentials from Firebase Firestore
  */
 export async function getFirebaseAuthConfig(): Promise<AuthConfig | null> {
+  const database = getDb();
+  if (!database) return null;
+
   try {
-    const docRef = doc(db, 'settings', 'auth_config');
+    const docRef = doc(database, 'settings', 'auth_config');
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data() as AuthConfig;
@@ -107,8 +138,11 @@ export async function getFirebaseAuthConfig(): Promise<AuthConfig | null> {
  * Save authentication and security credentials to Firebase Firestore
  */
 export async function saveFirebaseAuthConfig(config: AuthConfig): Promise<boolean> {
+  const database = getDb();
+  if (!database) return false;
+
   try {
-    const docRef = doc(db, 'settings', 'auth_config');
+    const docRef = doc(database, 'settings', 'auth_config');
     await setDoc(docRef, config, { merge: true });
     return true;
   } catch (e) {
